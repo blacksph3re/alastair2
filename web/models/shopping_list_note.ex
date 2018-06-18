@@ -2,11 +2,11 @@ defmodule Alastair.ShoppingListNote do
   use Alastair.Web, :model
 
   schema "shopping_list_notes" do
-    field :event_id, :string
     field :ticked, :boolean
     field :bought, :float
     belongs_to :ingredient, Alastair.Ingredient
     belongs_to :shopping_item, Alastair.ShoppingItem
+    belongs_to :event, Alastair.Event
 
     timestamps()
   end

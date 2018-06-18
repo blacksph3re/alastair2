@@ -92,7 +92,7 @@
     var vm = this;
   }
 
-  function MyEventsController($http) {
+  function MyEventsController($http, $state) {
     var vm = this;
     vm.fetching = true;
     $http({
@@ -105,6 +105,18 @@
       showError(error);
       vm.fetching = false;
     });
+
+    vm.createEvent = (name) => {
+      $http({
+        url: apiUrl + '/events',
+        method: "POST",
+        data: {event: {name: name}}
+      }).then((res) => {
+        $state.go("app.alastair_organizer.event", {id: res.data.data.id})
+      }).catch((error) => {
+        showError(error);
+      })
+    }
   }
 
   function EventController($http, $stateParams, $scope) {

@@ -3,7 +3,7 @@ defmodule Alastair.Repo.Migrations.CreateShoppingListNote do
 
   def change do
     create table(:shopping_list_notes) do
-      add :event_id, :string
+      add :event_id, references(:events, on_delete: :delete_all)
       add :ingredient_id, references(:ingredients, on_delete: :delete_all)
       add :ticked, :boolean
       add :bought, :float

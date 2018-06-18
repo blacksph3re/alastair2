@@ -36,7 +36,7 @@ defmodule Alastair.Router do
       put "/shopping_list/note/:ingredient_id", ShoppingListController, :put_note
     end
 
-    resources "/events", EventController, only: [:index, :show, :update]
+    resources "/events", EventController, only: [:index, :show, :update, :create]
 
     resources "/recipes", RecipeController, except: [:new, :edit] do
       resources "/reviews", ReviewController, except: [:new, :edit]

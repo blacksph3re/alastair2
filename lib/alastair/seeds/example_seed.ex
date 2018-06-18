@@ -113,18 +113,6 @@ defmodule Alastair.Seeds.ExampleSeed do
 
 		Alastair.RecipeController.update_avg_review(recipe1.id)
 
-		meal1 = Alastair.Repo.insert!(%Alastair.Meal{
-			name: "Dinner",
-			event_id: "DevelopYourself3",
-			date: Ecto.Date.cast!(%{year: 2015, month: 12, day: 10}),
-			time: Ecto.Time.cast!(%{hour: 20, minute: 0, second: 0})
-		})
-
-		Alastair.Repo.insert!(%Alastair.MealRecipe{
-			meal: meal1,
-			recipe: recipe1,
-			person_count: 11
-		})
 
 		shop1 = Alastair.Repo.insert!(%Alastair.Shop{
 			name: "Aldi",
@@ -136,6 +124,25 @@ defmodule Alastair.Seeds.ExampleSeed do
 			name: "Edeka",
 			location: "Dresden",
 			currency: euro
+		})
+
+		
+		event = Alastair.Repo.insert!(%Alastair.Event{
+			name: "Develop Yourself 3",
+			shop: shop1
+		})
+
+		meal1 = Alastair.Repo.insert!(%Alastair.Meal{
+			name: "Dinner",
+			event_id: event.id,
+			date: Ecto.Date.cast!(%{year: 2015, month: 12, day: 10}),
+			time: Ecto.Time.cast!(%{hour: 20, minute: 0, second: 0})
+		})
+
+		Alastair.Repo.insert!(%Alastair.MealRecipe{
+			meal: meal1,
+			recipe: recipe1,
+			person_count: 11
 		})
 
 		Alastair.Repo.insert!(%Alastair.ShopAdmin{
@@ -200,14 +207,11 @@ defmodule Alastair.Seeds.ExampleSeed do
 			shop: shop1
 		})
 
-		Alastair.Repo.insert!(%Alastair.Event{
-			id: "DevelopYourself3",
-			shop: shop1
-		})
+
 
 		Alastair.Repo.insert!(%Alastair.ShoppingListNote{
 			ticked: true,
-			event_id: "DevelopYourself3",
+			event_id: event.id,
 			ingredient: tomatoes,
 			shopping_item: fresh_tomatoes
 		})

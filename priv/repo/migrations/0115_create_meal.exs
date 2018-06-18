@@ -7,7 +7,7 @@ defmodule Alastair.Repo.Migrations.CreateMeal do
       add :time, :time
       add :date, :date
 
-      add :event_id, :string
+      add :event_id, references(:events, on_delete: :delete_all)
 
 
       timestamps()

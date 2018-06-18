@@ -11,14 +11,6 @@ defmodule Alastair.UserService do
     end
   end
 
-  defp convert_to_string(anything) do
-    case anything do
-      n when is_float(n) -> to_string(n)
-      n when is_integer(n) -> to_string(n)
-      n when is_number(n) -> to_string(n)
-      n -> n
-    end
-  end
 
   defp convert_to_boolean(anything) do
     case anything do
@@ -33,14 +25,20 @@ defmodule Alastair.UserService do
   defp parse_oms_user(conn, response) do
     case Poison.decode(response.body) do
       {:ok, body} -> 
-        atoms = [:id, :first_name, :last_name, :bodies, :is_superadmin] # Define which atoms to parse here
-        relevant? = fn (x) -> Enum.find(atoms, fn(a) -> Atom.to_string(a) == x end) end
-        user = for {key, val} <- body["data"], relevant?.(key), into: %{}, do: {String.to_existing_atom(key), convert_to_string(val)}
+      
+        user = %{
+          id: to_string(body["data"]["id"]),
+          first_name: body["data"]["first_name"],
+          last_name: body["data"]["last_name"],
+          bodies: body["data"]["bodies"],
+          is_superadmin: body["data"]["user"]["superadmin"]
+        }
 
         admin = Repo.get_by(Alastair.Admin, user_id: user.id)
 
+        # TODO superadmin should be fetched more elegantly
         user = user 
-        |> Map.put(:superadmin, convert_to_boolean(user.is_superadmin) || (admin != nil && admin.active))
+        |> Map.put(:superadmin, false || (admin != nil && admin.active))
         |> Map.put(:disabled_superadmin, admin != nil && !admin.active) 
         |> Map.delete(:is_superadmin)
 
@@ -57,6 +55,7 @@ defmodule Alastair.UserService do
 
   # HTTPoison returns :ok even on non-2xx status code, so we have to check ourselves
   defp check_error(conn, response) do
+    IO.inspect(response)
     case response.status_code do
       200 -> parse_oms_user(conn, response)
       401 ->         
@@ -74,7 +73,7 @@ defmodule Alastair.UserService do
     tmp = Plug.Conn.get_req_header(conn, "x-auth-token")
     if tmp != [] do
        token = hd(tmp);
-      case HTTPoison.post("http://omscore-nginx/api/tokens/user", "{\"token\": \"" <> token <> "\"}", [{"Content-Type", "application/json"}, {"X-Auth-Token", token}]) do
+      case HTTPoison.post("http://oms-core-elixir:4000/tokens/user", "{\"token\": \"" <> token <> "\"}", [{"Content-Type", "application/json"}, {"X-Auth-Token", token}]) do
         {:ok, response} -> check_error(conn, response)
         {:error, _error} ->     
           conn

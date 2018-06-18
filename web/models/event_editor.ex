@@ -3,9 +3,9 @@ defmodule Alastair.EventEditor do
   
 
   schema "event_editors" do
-    field :event_id, :string
-    field :value, :string
-    field :permission_type, PermissionTypeEnum
+    field :user_id, :string
+
+    belongs_to :event, Alastair.Event
   end
 
   @doc """
@@ -13,7 +13,7 @@ defmodule Alastair.EventEditor do
   """
   def changeset(struct, params \\ %{}) do
     struct
-    |> cast(params, [:event_id, :user_id, :role_id, :body_id, :anyone, :admin])
-    |> validate_required([:event_id, :admin])
+    |> cast(params, [:event_id, :user_id])
+    |> validate_required([:event_id, :user_id])
   end
 end

@@ -5,8 +5,8 @@ defmodule Alastair.Meal do
     field :name, :string
     field :date, Ecto.Date
     field :time, Ecto.Time
-    field :event_id, :string
 
+    belongs_to :event, Alastair.Event
     many_to_many :recipes, Alastair.Recipe, join_through: Alastair.MealRecipe
     has_many :meals_recipes, Alastair.MealRecipe, on_replace: :delete
 

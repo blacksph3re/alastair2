@@ -1,58 +1,46 @@
 defmodule Alastair.EventController do
   use Alastair.Web, :controller
   alias Alastair.Event
+  alias Alastair.EventEditor
 
   def get_event(id) do
-    db_event = case Repo.get_by(Event, id: id) do
-      nil -> Repo.insert!(%Event{id: id})
-      event -> event
+    Repo.get!(Event, id) |> Repo.preload([:event_editors])
+  end
+
+  def create(conn, %{"event" => event_params}) do
+    case Repo.transaction(fn -> 
+      changeset = Event.changeset(%Event{}, event_params)
+      event = case Repo.insert(changeset) do
+        {:ok, event} -> event
+        {:error, changeset} -> Repo.rollback(changeset)
+      end
+
+      Repo.insert!(%EventEditor{event_id: event.id, user_id: conn.assigns.user.id})
+      event
+    end) do
+      {:ok, event} -> 
+        conn
+        |> put_status(:created)
+        |> render("show.json", event: event)
+      {:error, changeset} ->
+        conn
+        |> put_status(:unprocessable_entity)
+        |> render(Alastair.ChangesetView, "error.json", changeset: changeset)
     end
-    remote_event = Alastair.EventService.get_event(id)
-
-    db_event
-    |> Map.put(:name, remote_event.name)
-    |> Map.put(:starts, remote_event.starts)
-    |> Map.put(:ends, remote_event.ends)
-    |> Map.put(:organizers, remote_event.organizers_list)
   end
 
-  def get_event_editors(id) do
-    from(p in Alastair.EventEditor, where: p.event_id == ^id) |> Repo.all
-  end
-
-  def get_meals(id) do
-    from(p in Alastair.Meal, where: p.event_id == ^id) |> Repo.all
-  end
-
-  # TODO only list own users events
   def index(conn, _params) do
-    events = from(p in Event)
+    events = from(p in Event,
+      join: q in EventEditor,
+      where: p.id == q.event_id and q.user_id == ^conn.assigns.user.id)
     |> Repo.all
-
-    events = events
-    |> Enum.map(fn(event) -> 
-      Task.async(fn -> # Spawn as async tasks as every event involves a GET to oms-events
-        remote_event = Alastair.EventService.get_event(event.id)
-
-        event
-        |> Map.put(:name, remote_event.name)
-        |> Map.put(:starts, remote_event.starts)
-        |> Map.put(:ends, remote_event.ends)
-        |> Map.put(:organizers, remote_event.organizers_list)
-      end)
-    end)
-    |> Enum.map(fn(task) -> Task.await(task) end)
 
     render(conn, "index.json", events: events)
   end
 
-  # It is only possible to show an event, if it does not exist in our database we create it right away
-  # TODO fetch event details from oms-events
   def show(conn, %{"id" => id}) do
     event = get_event(id)
-    |> Map.put(:event_editors, get_event_editors(id))
-    |> Map.put(:meals, get_meals(id))
-    |> Repo.preload([{:shop, [:currency]}])
+    |> Repo.preload([shop: [:currency], event_editors: [], meals: []])
 
     render(conn, "show.json", event: event)
   end
@@ -68,9 +56,7 @@ defmodule Alastair.EventController do
           where: p.event_id == ^id)
         |> Repo.delete_all
 
-        event = Repo.preload(event, [{:shop, [:currency]}])
-        |> Map.put(:meals, get_meals(id))
-        |> Map.put(:event_editors, get_event_editors(id))
+        event = Repo.preload(event, [{:shop, [:currency]}, meals: [], event_editors: []])
         
         render(conn, "show.json", event: event)
       {:error, changeset} ->

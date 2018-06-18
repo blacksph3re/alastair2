@@ -67,7 +67,7 @@
       <li class="left" ng-repeat="review in vm.recipe.reviews">
         <span class="date-time"><oms-star-rating score="review.rating", max="5"></oms-star-rating></span>
         <span class="name"><oms-simple-user userid="{{ review.user_id }}"></oms-simple-user></span>
-        <span class="image"><img alt="" src="assets/img/user-13.jpg" /></span>
+        <span class="image"><a ui-sref="app.profile({id: review.user_id })"><img alt="" src="assets/img/user-13.jpg" /></a></span>
         <div class="message">{{ review.review }}</div>
       </li>
     </ul>

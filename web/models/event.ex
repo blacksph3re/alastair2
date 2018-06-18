@@ -1,12 +1,12 @@
 defmodule Alastair.Event do
   use Alastair.Web, :model
 
-  @primary_key {:id, :string, []}
-  @derive {Phoenix.Param, key: :id}
   schema "events" do
+    field :name, :string
     belongs_to :shop, Alastair.Shop, on_replace: :nilify
 
     has_many :meals, Alastair.Meal
+    has_many :event_editors, Alastair.EventEditor
   end
 
   @doc """
@@ -14,8 +14,7 @@ defmodule Alastair.Event do
   """
   def changeset(struct, params \\ %{}) do
     struct
-    |> cast(params, [:shop_id])
-    |> validate_required([:id])
+    |> cast(params, [:shop_id, :name])
     |> foreign_key_constraint(:shop_id)
   end
 end
