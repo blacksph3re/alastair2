@@ -170,8 +170,8 @@ defmodule Alastair.ShoppingListController do
     event = Alastair.EventController.get_event(event_id)
 
     if ingredient_id != nil && event != nil do
-      changeset = case Repo.get_by(ShoppingListNote, event_id: event_id, ingredient_id: ingredient_id) do
-        nil -> %ShoppingListNote{event_id: event_id, ingredient_id: ingredient_id}
+      changeset = case Repo.get_by(ShoppingListNote, event_id: event.id, ingredient_id: ingredient_id) do
+        nil -> %ShoppingListNote{event_id: event.id, ingredient_id: ingredient_id}
         note -> note
       end
       |> ShoppingListNote.changeset(note_params)
