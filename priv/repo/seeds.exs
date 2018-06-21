@@ -20,5 +20,5 @@ try do
     raise "empty"
   end
 rescue
-  _ -> Alastair.Seeds.ExampleSeed.run
+  _ -> if Application.get_env(:alastair, :execute_seeds), do: Alastair.Seeds.ProductionSeed.run
 end

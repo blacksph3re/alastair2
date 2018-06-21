@@ -7,7 +7,8 @@ use Mix.Config
 
 # General application configuration
 config :alastair,
-  ecto_repos: [Alastair.Repo]
+  ecto_repos: [Alastair.Repo],
+  execute_seeds: true
 
 # Configures the endpoint
 config :alastair, Alastair.Endpoint,
