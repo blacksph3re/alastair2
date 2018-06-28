@@ -38,7 +38,7 @@ defmodule Alastair.UserService do
 
         # TODO superadmin should be fetched more elegantly
         user = user 
-        |> Map.put(:superadmin, false || (admin != nil && admin.active))
+        |> Map.put(:superadmin, user.is_superadmin || (admin != nil && admin.active))
         |> Map.put(:disabled_superadmin, admin != nil && !admin.active) 
         |> Map.delete(:is_superadmin)
 
