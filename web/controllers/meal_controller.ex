@@ -7,6 +7,7 @@ defmodule Alastair.MealController do
   def index(conn, %{"event_id" => event_id}) do
     meals = from(p in Meal, 
       where: p.event_id == ^event_id,
+      order_by: [asc: p.date, asc: p.time],
       preload: [{:meals_recipes, [:recipe]}])
     |> Repo.all
 
