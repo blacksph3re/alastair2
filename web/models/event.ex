@@ -15,6 +15,7 @@ defmodule Alastair.Event do
   def changeset(struct, params \\ %{}) do
     struct
     |> cast(params, [:shop_id, :name])
+    |> validate_required(:name)
     |> foreign_key_constraint(:shop_id)
   end
 end

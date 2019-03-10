@@ -17,4 +17,5 @@ config :alastair, Alastair.Repo,
   username: "postgres",
   password: "postgres",
   database: "alastair_prod",
+  hostname: System.get_env("DB_HOST") || "localhost",
   pool_size: 20

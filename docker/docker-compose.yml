@@ -8,8 +8,6 @@ services:
         image: aegee/alastair:dev
         volumes:
             - ./$PATH_ALASTAIR/../:/usr/src/myapp
-        depends_on:
-            - postgres-alastair
         expose:
             - "4000"
         labels:
@@ -18,11 +16,11 @@ services:
             - "traefik.port=4000"
             - "traefik.backend=alastair"
             - "traefik.enable=true"
-            - "registry.modules=/static/getModules.json"
-            - "registry.status=/status"
+        environment:
+            DB_HOST: postgres-alastair
 
     postgres-alastair:
-        image: postgres:latest
+        image: postgres:10.6
         volumes:
             - postgres-alastair:/var/lib/postgresql/data
         expose:
