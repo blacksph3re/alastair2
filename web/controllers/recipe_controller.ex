@@ -61,7 +61,7 @@ defmodule Alastair.RecipeController do
 
   def show(conn, %{"id" => id}) do
     recipe = Repo.get!(Recipe, id)
-      |> Repo.preload([{:recipes_ingredients, [{:ingredient, [:default_measurement]}]}, :reviews]) # Preload nested recipe_ingredient and ingredient and measurement
+      |> Repo.preload([{:recipes_ingredients, [{:ingredient, [:default_measurement]}]}, :reviews, :root_version]) # Preload nested recipe_ingredient and ingredient and measurement
     
     permissions = determine_permissions(recipe, conn.assigns.user)
 
@@ -78,7 +78,7 @@ defmodule Alastair.RecipeController do
     |> Enum.map(fn(x) -> x.version end)
     |> Enum.max(fn -> 0 end)
 
-    if max_version <= recipe.version do
+    if max_version <= recipe.version || conn.assigns.user.superadmin do
       case Repo.update(changeset) do
         {:ok, recipe} ->
           recipe = Repo.preload(recipe, [{:recipes_ingredients, [{:ingredient, [:default_measurement]}]}], force: true)

@@ -33,6 +33,7 @@ defmodule Alastair.RecipeView do
       published: recipe.published,
       created_by: recipe.created_by,
       version: recipe.version,
+      root_version: render_assoc_one(recipe.root_version, Alastair.RecipeView, "recipe.json"),
       recipes_ingredients: render_assoc_many(recipe.recipes_ingredients, Alastair.RecipeView, "recipe_ingredient.json"),
       reviews: render_assoc_many(recipe.reviews, Alastair.ReviewView, "review.json")
     }

@@ -45,7 +45,7 @@ defmodule Alastair.ShoppingItemController do
 
   def show(conn, %{"id" => id}) do
     shopping_item = Repo.get!(ShoppingItem, id)
-    |> Repo.preload([:mapped_ingredient])
+    |> Repo.preload([mapped_ingredient: [:default_measurement]])
 
     render(conn, "show.json", shopping_item: shopping_item)
   end
