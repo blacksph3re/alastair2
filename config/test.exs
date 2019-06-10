@@ -21,5 +21,5 @@ config :alastair, Alastair.Repo,
   username: "postgres",
   password: "postgres",
   database: "alastair_test",
-  hostname: "postgres-alastair",
+  hostname: System.get_env("DB_HOST") || "postgres-alastair",
   pool: Ecto.Adapters.SQL.Sandbox

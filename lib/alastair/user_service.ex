@@ -21,6 +21,29 @@ defmodule Alastair.UserService do
     end
   end
 
+  defp parse_superadmin_permissions(response) do
+    case response.status_code do
+      200 ->
+        Enum.any?(Poison.decode!(response.body)["data"], fn(x) -> 
+          x["object"] == "alastair" && x["action"] == "administer"
+        end)
+      _ -> false
+    end   
+  end
+
+  defp fetch_superadmin_permissions(conn, id) do
+    tmp = Plug.Conn.get_req_header(conn, "x-auth-token")
+    if tmp != [] do
+       token = hd(tmp);
+      case HTTPoison.get("http://oms-core-elixir:4000/my_permissions", [{"Content-Type", "application/json"}, {"X-Auth-Token", token}]) do
+        {:ok, response} -> parse_superadmin_permissions(response)
+        _ -> false
+      end
+    else
+      false
+    end
+  end
+
   # Parsing a response is a bit ugly...
   defp parse_oms_user(conn, response) do
     case Poison.decode(response.body) do
@@ -36,9 +59,12 @@ defmodule Alastair.UserService do
 
         admin = Repo.get_by(Alastair.Admin, user_id: user.id)
 
+        superadmin_permission = fetch_superadmin_permissions(conn, body["data"]["id"])
+        IO.inspect(superadmin_permission)
+
         # TODO superadmin should be fetched more elegantly
         user = user 
-        |> Map.put(:superadmin, user.is_superadmin || (admin != nil && admin.active))
+        |> Map.put(:superadmin, user.is_superadmin || (admin != nil && admin.active) || superadmin_permission)
         |> Map.put(:disabled_superadmin, admin != nil && !admin.active) 
         |> Map.delete(:is_superadmin)
 
